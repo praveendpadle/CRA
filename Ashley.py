@@ -23,48 +23,61 @@ def save_row(row):
 
     df = pd.DataFrame([row])
 
-    if not os.path.exists(
-        OUTPUT_FILE
-    ):
+    try:
 
-        df.to_excel(
-            OUTPUT_FILE,
-            index=False
-        )
-
-    else:
-
-        with pd.ExcelWriter(
-
-            OUTPUT_FILE,
-
-            engine="openpyxl",
-
-            mode="a",
-
-            if_sheet_exists="overlay"
-
-        ) as writer:
-
-            ws = writer.sheets[
-                "Sheet1"
-            ]
-
-            start = ws.max_row
+        if not os.path.exists(
+            OUTPUT_FILE
+        ):
 
             df.to_excel(
-
-                writer,
-
-                index=False,
-
-                header=False,
-
-                startrow=start
-
+                OUTPUT_FILE,
+                index=False
             )
 
+        else:
 
+            book = load_workbook(
+                OUTPUT_FILE
+            )
+
+            sheet = book.active
+
+            start_row = (
+                sheet.max_row
+            )
+
+            with pd.ExcelWriter(
+
+                OUTPUT_FILE,
+
+                engine="openpyxl",
+
+                mode="a",
+
+                if_sheet_exists="overlay"
+
+            ) as writer:
+
+                writer._book = book
+
+                df.to_excel(
+
+                    writer,
+
+                    startrow=start_row,
+
+                    header=False,
+
+                    index=False
+
+                )
+
+    except Exception as ex:
+
+        print(
+            "Save Error:",
+            ex
+        )
 # =====================================
 # DRIVER
 # =====================================
@@ -484,16 +497,23 @@ try:
 
                     # )
                     row = parse_store(
-                        s,
-                        st["state"]
-                    )
-                    save_row(row)
-                    print("\nSAVED")
+                    s,
+                    st["state"]
+                )
 
-                    print(
-                        #rows[-1]["Name"]
-                        rows[-1]
-                    )
+                    if row:
+
+                        rows.append(
+                            row
+                        )
+
+                        save_row(
+                            row
+                        )
+
+                        print(
+                            row
+                        )
 
                 except Exception as ex:
 
