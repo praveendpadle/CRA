@@ -82,7 +82,7 @@ def scrape_enterprise(driver, url):
         print(url)
         wait = WebDriverWait(
             driver,
-            30
+            20
         )
 
         wait.until(
@@ -185,20 +185,17 @@ def scrape_enterprise(driver, url):
 
             for day, time_block in zip(days, times):
 
-                # Some days have multiple <p> elements
-                time_values = [
-                    p.text.strip()
-                    for p in time_block.find_elements(By.TAG_NAME, "p")
-                    if p.text.strip()
-                ]
+                # Handles:
+                # 24 Hours
+                # Closed
+                # Multiple time ranges
+                value = time_block.text.replace("\n", ", ").strip()
 
-                hrs.append(
-                    f"{day.text.strip()}: {' , '.join(time_values)}"
-                )
+                hrs.append(f"{day.text.strip()}: {value}")
 
             hours = " | ".join(hrs)
 
-            print("Hours:", hours)
+            print(hours)
 
         except Exception as ex:
             print("Hours Error:", ex)
